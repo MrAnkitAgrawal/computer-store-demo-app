@@ -60,11 +60,11 @@ public class ItemServices {
 			ManufactureDetails manufacturerDetails = manufacturerList.stream()
 					.filter(each -> each.getManufacturerName().equals(manufacturer)).findFirst().orElse(null);
 			if(manufacturerDetails == null) {
-				//manufacturerDetails = manufacturerRepository.findByManufacturerName(manufacturer);
-				//if (manufacturerDetails == null) {
+				manufacturerDetails = manufacturerRepository.findByManufacturerName(manufacturer);
+				if (manufacturerDetails == null) {
 					manufacturerDetails = new ManufactureDetails();
 					manufacturerDetails.setManufacturerName(manufacturer);
-				//}
+				}
 				manufacturerList.add(manufacturerDetails);
 			}
 

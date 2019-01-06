@@ -30,7 +30,7 @@ public class SalesStoreApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		csvParser.setCsvFilePath("E:\\test.csv");
+		csvParser.setCsvFilePath("E:\\test1.csv");
 		try {	
 			List<CSVItem> csvItemList = csvParser.parseCSV();
 			log.debug(csvItemList);

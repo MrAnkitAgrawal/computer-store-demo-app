@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -29,6 +30,9 @@ public class ManufactureDetails implements Serializable {
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name="mid")
 	private List<ItemDetails> itemDetails = new ArrayList<>();
+	
+	@ManyToMany(mappedBy="manufacturedBy")
+	private List<ProductProperties> productProperties = new ArrayList<>();
 	
 	public ManufactureDetails() {
 	}
@@ -60,6 +64,14 @@ public class ManufactureDetails implements Serializable {
 
 	public void setItemDetails(List<ItemDetails> itemDetails) {
 		this.itemDetails = itemDetails;
+	}
+	
+	public List<ProductProperties> getProductProperties() {
+		return productProperties;
+	}
+
+	public void setProductProperties(List<ProductProperties> productProperties) {
+		this.productProperties = productProperties;
 	}
 
 	@Override
