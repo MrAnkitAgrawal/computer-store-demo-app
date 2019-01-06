@@ -1,6 +1,5 @@
 package com.tcs.salesstore.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -99,14 +98,4 @@ public class ItemServices {
 		}
 		return key;
 	}
-
-	@Transactional
-	public Iterable<ProductType> getItemDetails() {
-		Iterable<ProductType> a = productItemRepository.findAll();
-		for (ProductType pc : a) {
-
-		}
-		return a;
-	}
-
 }
