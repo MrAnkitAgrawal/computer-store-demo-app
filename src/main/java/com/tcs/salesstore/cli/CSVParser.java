@@ -1,4 +1,4 @@
-package com.tcs.salesstore.config;
+package com.tcs.salesstore.cli;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
