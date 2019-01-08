@@ -1,42 +1,17 @@
 package com.tcs.salesstore;
 
-import java.io.FileNotFoundException;
-import java.util.List;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 
-import com.tcs.salesstore.config.CSVParser;
-import com.tcs.salesstore.domain.model.CSVItem;
-import com.tcs.salesstore.service.ItemServices;
+import com.tcs.salesstore.cli.CommandLauncher;
 
 @SpringBootApplication
-public class SalesStoreApplication implements CommandLineRunner {
-	Log log = LogFactory.getLog(SalesStoreApplication.class);
-	
-	@Autowired
-	ItemServices itemServices;
-	
-	@Autowired
-	CSVParser csvParser;
-	
+public class SalesStoreApplication {
 	public static void main(String[] args) {
-		SpringApplication.run(SalesStoreApplication.class, args);
-	}
+		ApplicationContext context = SpringApplication.run(SalesStoreApplication.class, args);
 
-	@Override
-	public void run(String... args) throws Exception {
-		csvParser.setCsvFilePath("E:\\test.csv");
-		try {	
-			List<CSVItem> csvItemList = csvParser.parseCSV();
-			log.debug(csvItemList);
-			itemServices.saveOrUpdateCSVItemList(csvItemList);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}	
+		CommandLauncher commandLauncher = context.getBean(CommandLauncher.class);
+		commandLauncher.launchCommandPrompt();
 	}
 }

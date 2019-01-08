@@ -11,26 +11,29 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="product_properties", catalog="computer_store")
+@Table(name = "product_properties", catalog = "computer_store")
 public class ProductProperties implements Serializable {
 	@Id
-	@Column(name="id")
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name = "id")
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
-	
-	@Column(name="property_name")
+
+	@Column(name = "property_name")
 	private String propertyName;
-	
-	@Column(name="property_value")
+
+	@Column(name = "property_value")
 	private String propertyValue;
-	
-	@OneToMany(cascade=CascadeType.ALL)
+
+	@ManyToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "Product_Manufacturer", joinColumns = @JoinColumn(name = "PID"), inverseJoinColumns = @JoinColumn(name = "MID"))
 	List<ManufactureDetails> manufacturedBy = new ArrayList<>();
-	
+
 	public ProductProperties() {
 	}
 
@@ -96,5 +99,5 @@ public class ProductProperties implements Serializable {
 		return "ProductProperties [id=" + id + ", propertyName=" + propertyName + ", propertyValue=" + propertyValue
 				+ ", manufacturedBy=" + manufacturedBy + "]";
 	}
-	
+
 }

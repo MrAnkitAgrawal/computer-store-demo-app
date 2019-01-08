@@ -60,11 +60,11 @@ public class ItemServices {
 			ManufactureDetails manufacturerDetails = manufacturerList.stream()
 					.filter(each -> each.getManufacturerName().equals(manufacturer)).findFirst().orElse(null);
 			if(manufacturerDetails == null) {
-				//manufacturerDetails = manufacturerRepository.findByManufacturerName(manufacturer);
-				//if (manufacturerDetails == null) {
+				manufacturerDetails = manufacturerRepository.findByManufacturerName(manufacturer);
+				if (manufacturerDetails == null) {
 					manufacturerDetails = new ManufactureDetails();
 					manufacturerDetails.setManufacturerName(manufacturer);
-				//}
+				}
 				manufacturerList.add(manufacturerDetails);
 			}
 
@@ -76,6 +76,7 @@ public class ItemServices {
 				itemDetails.setSeriesNumber(seriesNumber);
 				itemDetails.setPrice(price);
 				itemDetails.setAmount(amount);
+				itemDetails.setProductProperties(productProperty);
 				
 				itemDetailsList.add(itemDetails);
 			} else {
@@ -83,6 +84,107 @@ public class ItemServices {
 			}	
 			
 			productItemRepository.save(productItemDetails);
+		}
+	}
+	
+	@Transactional
+	public String getItemDetails() {
+		final String lineSeperator = System.lineSeparator();
+		
+		StringBuilder treeViewSB = new StringBuilder();
+		
+		for (ProductType item : productItemRepository.findAll()) {
+			treeViewSB.append(item.getProductType() + lineSeperator);
+			
+			for (ProductProperties properties : item.getProductProperties()) {
+				treeViewSB.append("\t" + properties.getPropertyValue() + lineSeperator);
+				
+				for (ManufactureDetails manufacturer : properties.getManufacturedBy()) {
+					treeViewSB.append("\t\t" + manufacturer.getManufacturerName() + lineSeperator);
+
+					for (ItemDetails itemDetails : manufacturer.getItemDetails()) {
+						if (itemDetails.getProductProperties().equals(properties)) {
+							treeViewSB.append("\t\t\t[ " + itemDetails.getSeriesNumber() + " | " + itemDetails.getPrice() + " | "
+									+ itemDetails.getAmount() + " ]" + lineSeperator);
+						}
+					}
+				}
+			}
+		}
+		return treeViewSB.toString();
+	}
+	
+	@Transactional
+	public void getItemsTreeFormat() {
+		TreeNode root = new TreeNode("Computer Store");
+		
+		for (ProductType item : productItemRepository.findAll()) {
+			TreeNode productTypeNode = new TreeNode(item.getProductType());
+			root.addChildNode(productTypeNode);
+
+			for (ProductProperties properties : item.getProductProperties()) {
+				TreeNode productPopertiesNode = new TreeNode(properties.getPropertyValue());
+				productTypeNode.addChildNode(productPopertiesNode);
+				
+				for (ManufactureDetails manufacturer : properties.getManufacturedBy()) {
+					TreeNode manufacturerNode = new TreeNode(manufacturer.getManufacturerName());
+					productPopertiesNode.addChildNode(manufacturerNode);
+					
+					for (ItemDetails itemDetails : manufacturer.getItemDetails()) {
+						if (itemDetails.getProductProperties().equals(properties)) {
+							String data = "[ " + itemDetails.getSeriesNumber() + " | " + itemDetails.getPrice() + " | "
+									+ itemDetails.getAmount() + " ]";
+							
+							TreeNode itemNode = new TreeNode(data);
+							manufacturerNode.addChildNode(itemNode);
+						}
+					}
+				}
+
+			}
+		}
+		
+		print(root," ");
+	}
+	
+	private void print(TreeNode root, String aling) {
+		System.out.println(aling + root.getData());
+		root.getChildNodes().forEach(each ->  print(each, aling + aling));
+		
+	}
+
+	class TreeNode {
+		private String data;
+		private List<TreeNode> childNodes;
+		
+		public TreeNode(String data) {
+			this.data = data;
+			childNodes = new ArrayList<TreeNode>();
+		}
+
+		public String getData() {
+			return data;
+		}
+
+		public void setData(String data) {
+			this.data = data;
+		}
+
+		public List<TreeNode> getChildNodes() {
+			return childNodes;
+		}
+
+		public void setChildNodes(List<TreeNode> childNodes) {
+			this.childNodes = childNodes;
+		}
+		
+		public void addChildNode(TreeNode childNode) {
+			this.childNodes.add(childNode);
+		}
+
+		@Override
+		public String toString() {
+			return "[data=" + data + "]";
 		}
 	}
 
@@ -99,14 +201,4 @@ public class ItemServices {
 		}
 		return key;
 	}
-
-	@Transactional
-	public Iterable<ProductType> getItemDetails() {
-		Iterable<ProductType> a = productItemRepository.findAll();
-		for (ProductType pc : a) {
-
-		}
-		return a;
-	}
-
 }
