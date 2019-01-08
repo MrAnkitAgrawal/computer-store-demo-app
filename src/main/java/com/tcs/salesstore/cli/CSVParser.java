@@ -1,8 +1,10 @@
 package com.tcs.salesstore.cli;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,33 +16,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 import com.tcs.salesstore.domain.model.CSVItem;
+import com.tcs.salesstore.domain.model.Product;
 
 @Component
 public class CSVParser {
 	Log log = LogFactory.getLog(CSVParser.class);
 	
-	private String csvFilePath;
-	
-	public CSVParser() {
-	}
-
-	public CSVParser(String csvFilePath) {
-		this.csvFilePath = csvFilePath;
-	}
-	
-	public String getCsvFilePath() {
-		return csvFilePath;
-	}
-
-	public void setCsvFilePath(String csvFilePath) {
-		this.csvFilePath = csvFilePath;
-	}
-
-	public List<CSVItem> parseCSV() throws FileNotFoundException {
-		@SuppressWarnings("resource")
-		BufferedReader br = new BufferedReader(new FileReader(csvFilePath));
+	public List<CSVItem> parseCSV(Path csvFilePath) throws IOException {
 		Function<String, CSVItem> parsingLogic = getLogic();
-		List<CSVItem> itemList = br.lines().map(parsingLogic).collect(Collectors.toList());
+		List<CSVItem> itemList = Files.readAllLines(csvFilePath).stream().map(parsingLogic).collect(Collectors.toList());
 		log.debug(itemList);
 		return itemList;
 	}
@@ -61,32 +45,55 @@ public class CSVParser {
 	}
 
 	private CSVItem mapToItemObj(List<String> tokenList) {
+		if(tokenList.size() != 6) {
+			throw new RuntimeException("Invalid CSV File: Total Value Count Should Be 6!");
+		}
+		
 		CSVItem item = new CSVItem();
 		
-		item.setProductType(tokenList.get(0));
-		item.setAmount(Integer.valueOf(tokenList.get(1)));
+		if(!Product.getValidProducts().contains(tokenList.get(0).toUpperCase())) {
+			throw new RuntimeException("Invalid CSV File: Incorrect ProductType: " + tokenList.get(0));
+		}
+		final String productType = tokenList.get(0);
+		
+		if(!tokenList.get(1).chars().allMatch(Character::isDigit)) {
+			throw new RuntimeException("Invalid CSV File: Incorrect Amount: " + tokenList.get(1));
+		}
+		final int amount = Integer.valueOf(tokenList.get(1));
 
 		Map<String, String> itemProperties = tokenList.stream().filter(each -> each.contains(":"))
 				.collect(Collectors.toMap(each -> each.split(":")[0], each -> each.split(":")[1]));
+		
+		if(!isKeyValuePropertiesValid(productType, itemProperties)) {
+			throw new RuntimeException("Invalid CSV File: Incorrect Product Properties");
+		}
+		
+		item.setProductType(productType);
+		item.setAmount(amount);
 		item.setItemProperties(itemProperties);
 		
-		boolean isItemValid = validateItem(item);
-		if(!isItemValid) {
-			throw new RuntimeException("Incorrect CSV");
-		}
 		return item;
 	}
 
-	private boolean validateItem(CSVItem item) {
+	/**
+	 * Assuming CSV is containing correct properties.
+	 * <<Validation to be implemented>>
+	 * 
+	 * @param productType
+	 * @param itemProperties
+	 * @return
+	 */
+	private boolean isKeyValuePropertiesValid(String productType, Map<String, String> itemProperties) {
 		return true;
 	}
 
 	public static void main(String args[]) {
 		CSVParser parser = new CSVParser();
-		parser.setCsvFilePath("E:\\test.csv");
 		try {
-			parser.parseCSV();
+			parser.parseCSV(Paths.get("E:\\test.csv"));
 		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 

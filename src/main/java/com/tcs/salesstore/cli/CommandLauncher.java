@@ -1,6 +1,9 @@
 package com.tcs.salesstore.cli;
 
 import java.io.Console;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -26,7 +29,7 @@ public class CommandLauncher {
 			try {
 				cmdStr = console.readLine(cmdPrompt);
 				String[] commandTokens = cmdStr.split("\\s+");
-				log.debug("cmdStr: " + "\ncommandTokens: " + commandTokens);
+				log.debug("cmdStr: " + cmdStr + "\ncommandTokens: " + commandTokens);
 
 				boolean isCommandValid = validateCommand(commandTokens);
 				if (!isCommandValid) {
@@ -38,13 +41,17 @@ public class CommandLauncher {
 					}
 					executeCommand(commandTokens);
 				}
+			} catch (NoSuchFileException e) {
+				console.printf("%s\n", e.getMessage());
+				//log.error("Error during command parsing", e);
+			} catch (RuntimeException re) {
+				console.printf("%s\n", re.getMessage());
+				//log.error("Error during command parsing", re);
 			} catch (Exception e) {
-				console.printf("%s\n%s\n", invalidCmdMsg, cmdStr);
-				console.printf("%s\n", helpMsg);
-				log.error("Error during command parsing", e);
+				console.printf("%s\n", e.getMessage());
+				//log.error("Error during command parsing", e);
 			}
 		}
-
 	}
 
 	private boolean validateCommand(String[] commandTokens) {
@@ -63,16 +70,19 @@ public class CommandLauncher {
 		switch (command) {
 		case IMPORT:
 		case EXPORT:
+			isCommandValid = commandTokens.length == 2;
+			break;
 		case EXIT:
-			isCommandValid = true;
+			isCommandValid = commandTokens.length == 1;
 			break;
 		default:
 			isCommandValid = false;
 		}
+		
 		return isCommandValid;
 	}
 
-	private void executeCommand(String[] commandTokens) {
+	private void executeCommand(String[] commandTokens) throws FileNotFoundException, IOException {
 		Command command = Command.valueOf(commandTokens[0].toUpperCase());
 		switch (command) {
 		case IMPORT:
