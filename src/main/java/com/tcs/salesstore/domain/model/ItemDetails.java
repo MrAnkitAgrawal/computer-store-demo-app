@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -26,6 +27,9 @@ public class ItemDetails implements Serializable {
 	
 	@Column(name="amount")
 	private long amount;
+	
+	@ManyToOne
+	ProductProperties productProperties;
 	
 	public ItemDetails() {
 	}
@@ -66,6 +70,14 @@ public class ItemDetails implements Serializable {
 
 	public void setAmount(long amount) {
 		this.amount = amount;
+	}
+
+	public ProductProperties getProductProperties() {
+		return productProperties;
+	}
+
+	public void setProductProperties(ProductProperties productProperties) {
+		this.productProperties = productProperties;
 	}
 
 	@Override
